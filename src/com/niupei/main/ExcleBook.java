@@ -2,6 +2,8 @@ package com.niupei.main;
 
 import com.niupei.bean.Book;
 
+import jxl.Cell;
+import jxl.Sheet;
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.WritableSheet;
@@ -14,13 +16,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * Excle 导入导出
+ * Excel 导入导出
  * 引用了jxl.jar
  */
 public class ExcleBook {
 
+    /**
+     * 从集合导出到Excel
+     * @param ar
+     */
     //导出方法
-    public void excleOut(ArrayList<Book> ar ) {
+    public void excleOut(ArrayList<Book> ar) {
         //定义WritableWorkbook类型的对象，带表Excle对象
         WritableWorkbook book = null;
 
@@ -34,9 +40,9 @@ public class ExcleBook {
             //循环导出数组
             for (int i = 0; i < ar.size(); i++) {
                 Book bo = ar.get(i);
-                Label la1 = new Label(0,i,String.valueOf(bo.getId()));
-                Label la2 = new Label(1,i,bo.getName());
-                Label la3 = new Label(2,i,bo.getTyep());
+                Label la1 = new Label(0, i, String.valueOf(bo.getId()));
+                Label la2 = new Label(1, i, bo.getName());
+                Label la3 = new Label(2, i, bo.getTyep());
 
                 //插入值
                 sheet.addCell(la1);
@@ -69,10 +75,59 @@ public class ExcleBook {
     }
 
 
+    /**
+     * 导入方法
+     * 从Excel导入到ArrayList<>集合
+     * @return
+     */
+    public ArrayList<Book> excelIn() {
+        //倒入的数据最终返回到集合里
+        ArrayList<Book> ar = new ArrayList<Book>();
+        //创建一个Wrokbook对象
+        Workbook book = null;
+        try {
+
+            //获取excel对象
+            book = Workbook.getWorkbook(new File("book.xls"));
+            //获取第一个选项卡 sheet1
+            Sheet sheet = book.getSheet(0);
+            //循环读入数据
+            for (int i = 0; i < sheet.getRows(); i++) {
+                //Book对象，存储值
+                Book bo = new Book();
+                //每一个行代表一个实体类,参数：列 行
+                Cell cell = sheet.getCell(0, i);
+                //获取单元格的值并封装到对象中
+                        //转换类型
+                bo.setId(Integer.valueOf(cell.getContents()));
+                bo.setName(sheet.getCell(1,i).getContents());
+                bo.setTyep(sheet.getCell(2,i).getContents());
+
+                //最后封装到集合
+                ar.add(bo);
+
+
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            //最终执行，关闭数据流
+            book.close();
+        }
+
+
+        return ar;
+    }
+
+
     public static void main(String[] args) {
+
         //实例化
         ExcleBook eb = new ExcleBook();
 
+        //**********************执行导出************************
         //定义一个集合
         ArrayList<Book> bo = new ArrayList<Book>();
 
@@ -92,9 +147,15 @@ public class ExcleBook {
         bo.add(book);
         bo.add(book2);
 
-
         //导出
         eb.excleOut(bo);
+        
+        //***********************执行倒入*****************************
+        ArrayList<Book> ar1 = eb.excelIn();
+        for (Book b2 :ar1) {
+            System.out.println(b2.getName()+b2.getTyep());
+        }
+        
     }
 
 
